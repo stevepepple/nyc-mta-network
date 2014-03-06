@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>Theme</title>
+
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+<script src='https://api.tiles.mapbox.com/mapbox.js/v1.6.1/mapbox.js'></script>
+
+<script src='//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>
+
+
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%;  background: none repeat scroll 0 0 #222222;}
+  
+</style>
+
+<link href='https://api.tiles.mapbox.com/mapbox.js/v1.6.1/mapbox.css' rel='stylesheet' />
+
+</head>
+<body>
+	<ul id='map-ui'></ul>
+	<div id='map' class="dark"></div>
+	<script>
+	
+		var circle_options = {
+			color:'#1C75BC',
+			opacity: .8,
+			weight: 1,
+			fillColor:'#1C75BC',
+			fillOpacity: .4
+		}
+
+		map = L.mapbox.map('map', 'examples.map-y7l23tes');
+		
+		var featureGroup = L.featureGroup().addTo(map);
+		
+		var featureLayer = L.mapbox.featureLayer()		
+		    .loadURL('data/nyc-markers.geojson');
+			
+			
+		featureLayer.on('ready', function() {
+		    //featureLayer.getBounds() returns the corners of the furthest-out markers,
+		    // and map.fitBounds() makes sure that the map contains these.
+		    map.fitBounds(featureLayer.getBounds());
+			
+			geoJSON = featureLayer.getGeoJSON();
+			
+			//map.featureLayer.setGeoJSON(geoJSON, { style: myStyle });
+			for (var i = 0; i < geoJSON.features.length; i++) {
+
+				/* Must transpose the lat-long order */
+				var coord = geoJSON.features[i].geometry.coordinates;
+				var location = L.latLng(coord[1], coord[0])
+				
+				var circle = L.circle(location, 300, circle_options).addTo(featureGroup);
+				
+				geoJSON.features[i].properties['marker-color'] = "#000000";
+				geoJSON.features[i].properties["marker-size"] = "small"
+			}
+			
+			var location = L.latLng(40.6700, -73.9400)
+			//var circle_two = L.circle(location, 50, circle_options).addTo(featureLayer);
+
+			featureGroup.addTo(map)
+			
+			
+		});
+	
+	</script>
+</body>
+</html>

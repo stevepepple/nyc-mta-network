@@ -57,9 +57,17 @@ with open('data/transit-feed/stop_times.txt') as fh:
 edges = G.edges()
 
 #for source, target in G.edges():
-#    print G.get_edge_data(source, target)['line']
+degrees = nx.degree(G)
 
-out['nodes'] = [{'name': node, 'stop_id': G.node[node]['stop_id'], 'lat': G.node[node]['lat'], 'lon': G.node[node]['lon'] } for node in nodes]
+
+#print G.get_edge_data(source, target)['line']
+
+#for node in nodes:
+#    print node.degree
+    
+    
+
+out['nodes'] = [{'name': node, 'stop_id': G.node[node]['stop_id'], 'lat': G.node[node]['lat'], 'lon': G.node[node]['lon'], 'degree': degrees[node] } for node in nodes]
 out['links'] = [{'source': nodes.index(source), 'target': nodes.index(target), 'line': G.get_edge_data(source, target)['line'] } for source, target in G.edges()]
 
 

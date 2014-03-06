@@ -8,6 +8,8 @@
 <script src='https://api.tiles.mapbox.com/mapbox.js/v1.6.1/mapbox.js'></script>
 
 <script src='//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
 
 
 <style>
@@ -31,40 +33,41 @@
 			fillColor:'#1C75BC',
 			fillOpacity: .4
 		}
-
+		
 		map = L.mapbox.map('map', 'examples.map-y7l23tes');
+		
 		
 		var featureGroup = L.featureGroup().addTo(map);
 		
 		var featureLayer = L.mapbox.featureLayer()		
 		    .loadURL('data/nyc-markers.geojson');
 			
-			
+		
 		featureLayer.on('ready', function() {
 		    //featureLayer.getBounds() returns the corners of the furthest-out markers,
 		    // and map.fitBounds() makes sure that the map contains these.
-		    map.fitBounds(featureLayer.getBounds());
+			d3.json('data/stations_graph.json', function(json){
+				//console.log(json.nodes)
+
+				json.nodes.forEach(function(node, i) {
+				
+					console.log(node.lat, node.lon, node.degree)
+					var location = L.latLng(node.lat, node.lon)
+					console.log(node.degree)
+				
+					var circle = L.circle(location, (node.degree * 50 / 2) * (node.degree / 2), circle_options).addTo(featureGroup);
+				
+				});
+
+			});
 			
 			geoJSON = featureLayer.getGeoJSON();
-			
-			//map.featureLayer.setGeoJSON(geoJSON, { style: myStyle });
-			for (var i = 0; i < geoJSON.features.length; i++) {
-
-				/* Must transpose the lat-long order */
-				var coord = geoJSON.features[i].geometry.coordinates;
-				var location = L.latLng(coord[1], coord[0])
-				
-				var circle = L.circle(location, 300, circle_options).addTo(featureGroup);
-				
-				geoJSON.features[i].properties['marker-color'] = "#000000";
-				geoJSON.features[i].properties["marker-size"] = "small"
-			}
 			
 			var location = L.latLng(40.6700, -73.9400)
 			//var circle_two = L.circle(location, 50, circle_options).addTo(featureLayer);
 
 			featureGroup.addTo(map)
-			
+		    map.fitBounds(featureLayer.getBounds());
 			
 		});
 	

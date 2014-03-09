@@ -1,172 +1,79 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8">
-	<script src="http://d3js.org/d3.v3.min.js"></script>
-	<script src="http://d3js.org/topojson.v1.min.js"></script>
-    <style>
-	
-	body {
-		font-family: "Helvetica Neue",HelveticaNeue,"Helvetica-Neue",Helvetica,"BBAlpha Sans",sans-serif;
-	}
-    circle {
-        stroke: #6B6B6B;
-        stroke-width:1px;
-        fill: #B7B7B7;
-        opacity:0.8;
-    }
-	
-	link, .link {
-        stroke: #0B2A42;
-		stroke-width: 2px;
-        opacity:0.5;
-	}
-	
-	.tooltip {
-		background:#FFFFFF;
-		border: solid 1px #2D7260;
-	    opacity: 0.7;
-	    z-index: 100;
-		padding:10px;
-	    position: absolute;
-	}
-	
-    </style>
-</head>
-<body>
-    <script>
-		<!-- http://dhs.stanford.edu/dh/networks/ -->
-		var line_colors = {
-			"1"  : "#EE352E",
-			"2"  : "#EE352E",
-			"3"  : "#EE352E",
-			"4"  : "#00933C",
-			"5"  : "#00933C",
-			"6"  : "#00933C",
-			"7"  : "#B933AD",
-			"7X" : "#B933AD",
-			"A"  : "#2850AD",
-			"E"  : "#2850AD",
-			"C"  : "#2850AD",
-			"B"  : "#FF6319",
-			"D"  : "#FF6319",
-			"F"  : "#FF6319",
-			"H"  : "#6E3219",
-			"M"  : "#FF6319",
-			"G"  : "#6CBE45",
-			"J"  : "#996633",
-			"Z"  : "#996633",
-			"L"  : "#74767C",
-			"N"  : "#FBAF3F",
-			"Q"  : "#FBAF3F",
-			"R"  : "#FBAF3F",
-			"S"  : "#808183",
-			"GS" : "#808183",
-			"FS" : "#808183",
-			"SI" : "#CCCCCC"
-		}
-		
-        d3.json('data/stations_graph.json', function(json){
-            
-            var width = 1200,
-                height = 1000;
-            
-            var svg = d3.select('body')
-              .append('svg')
-                .attr('width', width)
-                .attr('height', height);
-				
-			tip = d3.select("body").append("div")   
-			      .attr("class", "tooltip")      
-			      .style("opacity", 0);
 
-            // draw the graph nodes
-            var node = svg.selectAll("circle.node")
-              .data(json.nodes)
-              .enter()
-              .append("circle")
-                .attr("class", "node")
-				.attr("title", function(d) { return d.name; })
-				.attr("top", function(d) { return d.lon + "px"; })
-				.attr("x", function(d) { return Number(d.lat); })
-				.attr("y", function(d) { return Number(d.lon); })
-				.attr("left", function(d) { return d.lat + "px"; })
-				.attr("r", 3);
-				
-            // draw the graph edges
-            var link = svg.selectAll("line.link")
-              .data(json.links)
-              .enter().append("line")
-			  .attr("class", "link");
-            
-            // create the layout
-			
-            force = d3.layout.force()
-				.nodes(json.nodes)
-            	.links(json.links)
-                .size([width, height])
-                .linkDistance(60)
-                .charge(-100)
-				.friction(0.5)
-				.on("tick", tick)
-				.alpha(-5)
-            	.start()
-            
-            // define what to do one each tick of the animation
-			/*
-			force.start();
-			var n = node.length;
-			node.forEach(function(d, i) {
-				
-				force.tick()
-				
-				console.log(d)
-				d.x = d.y = width / n * i;
-				
-			});
-			force.start();
-			*/
-			
-			function tick() {
-				console.log("tick")
-			}
-			
-            
-			force.on("tick", function() {
-				
-				/* TODO: how to weight the nodes and links to the geographic network */
-				/* Decrease the line opacity based upon weight */
-                node.attr("cx", function(d) { return d.x })
-                    .attr("cy", function(d) { return d.y })
-	                .attr("r",  function(d) { return 2 * d.weight; })
-					.on("mouseover", function(d){
-						tip.style("opacity", .8)
-						.style("left", d.x + "px")
-						.style("top", d.y + "px")
-						.html(d.name + "<br/>" + d.weight + " MTA Lines <br/> Stop is " + d.stop_id)
-				});
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Nyc-mta-network : Network Analysis of New York MTA" />
 
-				/* Decrease the line opacity based upon weight */
-                link.attr("x1", function(d) { return d.source.x; })
-                    .attr("y1", function(d) { return d.source.y; })
-                    .attr("x2", function(d) { return d.target.x; })
-                    .attr("y2", function(d) { return d.target.y; })
-                    .style("stroke-width", function(d) { return (d.source.weight * 0.5); })
-					.style("stroke", function(d) { return line_colors[d.line] })
-					.on("mouseover", function(d){
-						tip.style("opacity", .8)
-						.style("left", d.x + "px")
-						.style("top", d.y + "px")
-						.html("Line is " + d.line)
-					});
-				
-			});
-            // bind the drag interaction to the nodes
-			/*
-            node.call(force.drag);
-			*/
-			
-        });
-    </script>
-</body>
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Nyc-mta-network</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/stevepepple/nyc-mta-network">View on GitHub</a>
+
+          <h1 id="project_title">Nyc-mta-network</h1>
+          <h2 id="project_tagline">Network Analysis of New York MTA</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/stevepepple/nyc-mta-network/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/stevepepple/nyc-mta-network/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>
+<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+
+<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+
+<pre><code>$ cd your_repo_root/repo_name
+$ git fetch origin
+$ git checkout gh-pages
+</code></pre>
+
+<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+
+<h3>
+<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+
+<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+
+<h3>
+<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+
+<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+
+<h3>
+<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+
+<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+
+<h3>
+<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
+
+<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Nyc-mta-network maintained by <a href="https://github.com/stevepepple">stevepepple</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
 </html>

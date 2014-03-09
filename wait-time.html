@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>NYC MTA</title>
+
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+<script src='https://api.tiles.mapbox.com/mapbox.js/v1.6.1/mapbox.js'></script>
+
+<script src='//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src="leaflet.ajax.js" type="text/javascript" charset="utf-8"></script>
+
+
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%;  background: none repeat scroll 0 0 #222222;}
+  
+</style>
+
+<link href='https://api.tiles.mapbox.com/mapbox.js/v1.6.1/mapbox.css' rel='stylesheet' />
+
+</head>
+<body>
+	<ul id='map-ui'></ul>
+	<div id='map' class="dark"></div>
+	<script>
+	
+		var circle_options = {
+			color:'#1C75BC',
+			opacity: .8,
+			weight: 1,
+			fillColor:'#1C75BC',
+			fillOpacity: .4
+		}
+		
+		var line_colors = {
+			"1"  : "#EE352E",
+			"2"  : "#EE352E",
+			"3"  : "#EE352E",
+			"4"  : "#00933C",
+			"5"  : "#00933C",
+			"6"  : "#00933C",
+			"7"  : "#B933AD",
+			"7X" : "#B933AD",
+			"A"  : "#2850AD",
+			"E"  : "#2850AD",
+			"C"  : "#2850AD",
+			"B"  : "#FF6319",
+			"D"  : "#FF6319",
+			"F"  : "#FF6319",
+			"H"  : "#6E3219",
+			"M"  : "#FF6319",
+			"G"  : "#6CBE45",
+			"J"  : "#996633",
+			"Z"  : "#996633",
+			"L"  : "#74767C",
+			"N"  : "#FBAF3F",
+			"Q"  : "#FBAF3F",
+			"R"  : "#FBAF3F",
+			"S"  : "#808183",
+			"GS" : "#808183",
+			"FS" : "#808183",
+			"SI" : "#CCCCCC"
+		}
+		
+		var wait_time = {
+			"1" : 75.603846153846149, 
+			"2" : 72.976923076923086, 
+			"3" : 76.703846153846129, 
+			"4" : 71.396153846153851, 
+			"5" : 71.265384615384633,
+			"6" : 73.400000000000006,
+			"7" : 75.038461538461547, 
+			"A" : 71.346153846153854, 
+			"B" : 77.623076923076923, 
+			"C" : 79.611538461538458, 
+			"D" : 79.75, 
+			"E" : 73.930769230769229, 
+			"F" : 70.676923076923075, 
+			"G" : 81.34615384615384, 
+			"Z" : 85.053846153846152, 
+			"J" : 85.053846153846152, 
+			"L" : 76.976923076923057, 
+			"M" : 95.949999999999989, 
+			"N" : 80.261538461538464, 
+			"Q" : 81.546153846153828, 
+			"R" : 77.515384615384605,
+			"S" : 65.0,
+			"SIR" : 85.0
+		}
+		
+		map = L.mapbox.map('map', 'examples.map-y7l23tes').setView([40.7143528, -74.0059731], 11);
+		
+		var featureGroup = L.featureGroup().addTo(map);
+		
+		var featureLayer = L.mapbox.featureLayer()		
+		    .loadURL('data/nyc-paths.json');
+			
+		var lines = {}
+		//featureLayer.addTo(map)
+
+		var geojsonLayer = L.geoJson.ajax("data/nyc-paths.json",{
+			middleware:function(data){
+				lines = data;
+
+				L.geoJson(lines, {
+				    style: function(feature) {
+						
+						if (feature.properties.lines.length > 1) {
+							var time = 0;
+							
+							for (var i = 0; i < feature.properties.lines.length; i++) {
+								if (wait_time[feature.properties.lines[i]] == undefined) {
+									console.log("missing: ", feature.properties.lines[i])
+								}
+								
+								time += wait_time[feature.properties.lines[i]];
+							}
+							
+							time = time / feature.properties.lines.length;
+							return { color: getColor(time) };
+						} else {
+							
+							if (wait_time[feature.properties.lines] == undefined) {
+								console.log("missing: ", feature.properties.lines)
+							}
+							
+							var time = wait_time[feature.properties.lines];
+							
+							return { color: getColor(time) };
+						}
+						
+				    }
+				}).addTo(map);
+				
+		    	return esri2geoOrSomething(json);
+		    }
+		});
+						
+		function getColor(value) {
+			
+			if (value > 95) {
+				return "#31a354"
+			} else if (value > 85 ) {
+				return "#aed68e"
+			} else if (value > 80) {
+				return "#befc86"
+			} else if (value > 75) {
+				return "#fec450"
+			} else if (value > 70) {
+				return "#d76026"
+			} else if (value > 65) {
+				return "#d76026"
+			}
+		}
+	
+	</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>NYC MTA</title>
+
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+<script src='https://api.tiles.mapbox.com/mapbox.js/v1.6.1/mapbox.js'></script>
+
+<script src='//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src="leaflet.ajax.js" type="text/javascript" charset="utf-8"></script>
+
+
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%;  background: none repeat scroll 0 0 #222222;}
+  
+</style>
+
+<link href='https://api.tiles.mapbox.com/mapbox.js/v1.6.1/mapbox.css' rel='stylesheet' />
+
+</head>
+<body>
+	<ul id='map-ui'></ul>
+	<div id='map' class="dark"></div>
+	<script>
+	
+		var circle_options = {
+			color:'#1C75BC',
+			opacity: .8,
+			weight: 1,
+			fillColor:'#1C75BC',
+			fillOpacity: .4
+		}
+		
+		var line_colors = {
+			"1"  : "#EE352E",
+			"2"  : "#EE352E",
+			"3"  : "#EE352E",
+			"4"  : "#00933C",
+			"5"  : "#00933C",
+			"6"  : "#00933C",
+			"7"  : "#B933AD",
+			"7X" : "#B933AD",
+			"A"  : "#2850AD",
+			"E"  : "#2850AD",
+			"C"  : "#2850AD",
+			"B"  : "#FF6319",
+			"D"  : "#FF6319",
+			"F"  : "#FF6319",
+			"H"  : "#6E3219",
+			"M"  : "#FF6319",
+			"G"  : "#6CBE45",
+			"J"  : "#996633",
+			"Z"  : "#996633",
+			"L"  : "#74767C",
+			"N"  : "#FBAF3F",
+			"Q"  : "#FBAF3F",
+			"R"  : "#FBAF3F",
+			"S"  : "#808183",
+			"GS" : "#808183",
+			"FS" : "#808183",
+			"SI" : "#CCCCCC"
+		}
+		
+		map = L.mapbox.map('map', 'examples.map-y7l23tes').setView([40.7143528, -74.0059731], 11);
+		
+		var featureGroup = L.featureGroup().addTo(map);
+		
+		var featureLayer = L.mapbox.featureLayer()		
+		    .loadURL('data/nyc-paths.json');
+			
+		var lines = {}
+		//featureLayer.addTo(map)
+
+		var geojsonLayer = L.geoJson.ajax("data/nyc-paths.json",{
+			middleware:function(data){
+				console.log(data);
+				lines = data;
+
+				L.geoJson(lines, {
+				    style: function(feature) {
+
+						if (line_colors[feature.properties.lines] == undefined) {
+							console.log(feature.properties.lines)
+						}
+						if (feature.properties.lines.length > 1) {
+							return { color: line_colors[feature.properties.lines[0]] };
+						} else {
+							return { color: line_colors[feature.properties.lines] };
+						}
+						
+				    }
+				}).addTo(map);
+				
+		    	return esri2geoOrSomething(json);
+		    }
+		});
+						
+	
+	</script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script src="http://d3js.org/topojson.v1.min.js"></script>
+    <style>
+	
+	body {
+		font-family: "Helvetica Neue",HelveticaNeue,"Helvetica-Neue",Helvetica,"BBAlpha Sans",sans-serif;
+	}
+    circle {
+        stroke: #6B6B6B;
+        stroke-width:1px;
+        fill: #B7B7B7;
+        opacity:0.8;
+    }
+	
+	link, .link {
+        stroke: #0B2A42;
+		stroke-width: 2px;
+        opacity:0.5;
+	}
+	
+	.tooltip {
+		background:#FFFFFF;
+		border: solid 1px #2D7260;
+	    opacity: 0.7;
+	    z-index: 100;
+		padding:10px;
+	    position: absolute;
+	}
+	
+    </style>
+</head>
+<body>
+    <script>
+		<!-- http://dhs.stanford.edu/dh/networks/ -->
+		var line_colors = {
+			"1"  : "#EE352E",
+			"2"  : "#EE352E",
+			"3"  : "#EE352E",
+			"4"  : "#00933C",
+			"5"  : "#00933C",
+			"6"  : "#00933C",
+			"7"  : "#B933AD",
+			"7X" : "#B933AD",
+			"A"  : "#2850AD",
+			"E"  : "#2850AD",
+			"C"  : "#2850AD",
+			"B"  : "#FF6319",
+			"D"  : "#FF6319",
+			"F"  : "#FF6319",
+			"H"  : "#6E3219",
+			"M"  : "#FF6319",
+			"G"  : "#6CBE45",
+			"J"  : "#996633",
+			"Z"  : "#996633",
+			"L"  : "#74767C",
+			"N"  : "#FBAF3F",
+			"Q"  : "#FBAF3F",
+			"R"  : "#FBAF3F",
+			"S"  : "#808183",
+			"GS" : "#808183",
+			"FS" : "#808183",
+			"SI" : "#CCCCCC"
+		}
+		
+        d3.json('data/stations_graph.json', function(json){
+            
+            var width = 1200,
+                height = 1000;
+            
+            var svg = d3.select('body')
+              .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+				
+			tip = d3.select("body").append("div")   
+			      .attr("class", "tooltip")      
+			      .style("opacity", 0);
+
+            // draw the graph nodes
+            var node = svg.selectAll("circle.node")
+              .data(json.nodes)
+              .enter()
+              .append("circle")
+                .attr("class", "node")
+				.attr("title", function(d) { return d.name; })
+				.attr("top", function(d) { return d.lon + "px"; })
+				.attr("x", function(d) { return Number(d.lat); })
+				.attr("y", function(d) { return Number(d.lon); })
+				.attr("left", function(d) { return d.lat + "px"; })
+				.attr("r", 3);
+				
+            // draw the graph edges
+            var link = svg.selectAll("line.link")
+              .data(json.links)
+              .enter().append("line")
+			  .attr("class", "link");
+            
+            // create the layout
+			
+            force = d3.layout.force()
+				.nodes(json.nodes)
+            	.links(json.links)
+                .size([width, height])
+                .linkDistance(60)
+                .charge(-100)
+				.friction(0.5)
+				.on("tick", tick)
+				.alpha(-5)
+            	.start()
+            
+            // define what to do one each tick of the animation
+			/*
+			force.start();
+			var n = node.length;
+			node.forEach(function(d, i) {
+				
+				force.tick()
+				
+				console.log(d)
+				d.x = d.y = width / n * i;
+				
+			});
+			force.start();
+			*/
+			
+			function tick() {
+				console.log("tick")
+			}
+			
+            
+			force.on("tick", function() {
+				
+				/* TODO: how to weight the nodes and links to the geographic network */
+				/* Decrease the line opacity based upon weight */
+                node.attr("cx", function(d) { return d.x })
+                    .attr("cy", function(d) { return d.y })
+	                .attr("r",  function(d) { return 2 * d.weight; })
+					.on("mouseover", function(d){
+						tip.style("opacity", .8)
+						.style("left", d.x + "px")
+						.style("top", d.y + "px")
+						.html(d.name + "<br/>" + d.weight + " MTA Lines <br/> Stop is " + d.stop_id)
+				});
+
+				/* Decrease the line opacity based upon weight */
+                link.attr("x1", function(d) { return d.source.x; })
+                    .attr("y1", function(d) { return d.source.y; })
+                    .attr("x2", function(d) { return d.target.x; })
+                    .attr("y2", function(d) { return d.target.y; })
+                    .style("stroke-width", function(d) { return (d.source.weight * 0.5); })
+					.style("stroke", function(d) { return line_colors[d.line] })
+					.on("mouseover", function(d){
+						tip.style("opacity", .8)
+						.style("left", d.x + "px")
+						.style("top", d.y + "px")
+						.html("Line is " + d.line)
+					});
+				
+			});
+            // bind the drag interaction to the nodes
+			/*
+            node.call(force.drag);
+			*/
+			
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>NYC MTA</title>
+
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+<script src='https://api.tiles.mapbox.com/mapbox.js/v1.6.1/mapbox.js'></script>
+
+<script src='//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+
+
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%;  background: none repeat scroll 0 0 #222222;}
+  
+</style>
+
+<link href='https://api.tiles.mapbox.com/mapbox.js/v1.6.1/mapbox.css' rel='stylesheet' />
+
+</head>
+<body>
+	<ul id='map-ui'></ul>
+	<div id='map' class="dark"></div>
+	<script>
+	
+		var circle_options = {
+			color:'#1C75BC',
+			opacity: 0,
+			weight: 1,
+			fillColor:'#1C75BC',
+			fillOpacity: .4
+		}
+		
+		map = L.mapbox.map('map', 'examples.map-y7l23tes');
+		
+		
+		var featureGroup = L.featureGroup().addTo(map);
+		
+		var featureLayer = L.mapbox.featureLayer()		
+		
+		combined = {}
+
+
+		d3.json('data/plaza_traffic.json', function(json){
+
+			json.cash.forEach(function(node, i) {
+				combined[node.id] = {}
+				combined[node.id].name = node.name;
+				combined[node.id].coord = node.coord
+				combined[node.id].location= L.latLng(node.coord[0], node.coord[1])
+				combined[node.id].total = node.count			
+			});
+			
+			json.electronic.forEach(function(node, i) {
+				combined[node.id].total += node.count			
+			});
+			
+			for (x in combined) {
+				var node = combined[x]
+				
+				if (node.total > 100000) {
+					circle_options.fillColor = "#e8c55f";
+				} else if (node.total > 90000) {
+					circle_options.fillColor = "#d18c03";
+				} else if (node.total > 80000) {
+					circle_options.fillColor = "#b95e13";
+				} else if (node.total > 70000) {
+					circle_options.fillColor = "#993744";
+				} else if (node.total > 6000) {
+					circle_options.fillColor = "#64266a";
+				} else {
+					circle_options.fillColor = "#e8c55f";
+				}
+
+				console.log(node.total)
+
+				var circle = L.circle(node.location, node.total / 100, circle_options).addTo(featureGroup);
+				var circle = L.circle(node.location, node.total / 2000, circle_options).addTo(featureGroup);
+
+			}
+			
+			featureGroup.addTo(map)
+		    map.fitBounds(featureGroup.getBounds());
+			
+			var location = L.latLng(40.6700, -73.9400)
+			
+
+		});
+	
+	</script>
+</body>
+</html>
